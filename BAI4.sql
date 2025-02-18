@@ -35,12 +35,17 @@ create procedure Register_for_the_course(
 )
 begin
 	declare c_available_seats int;
-    declare s_student_id int;
-    declare c_course_id int;
+    	declare s_student_id int;
+    	declare c_course_id int;
+	declare message_text varchar(200);
 	start transaction;
     select available_seats, course_id into c_available_seats, c_course_id  from courses c where c.course_name = p_course_name;
     select student_id into s_student_id from students s where s.student_name = p_student_name;
-
+	if s_student_id is null then
+		set message_text = 'Mã sinh viên ko hợp lệ';
+	elseif c_course_id is null then
+		set message_text = 'Mã khóa học ko hợp lệ';
+	else
 	if c_available_seats > 0 then
 		insert into enrollments(student_id, course_id)
         values(s_student_id, c_course_id);
@@ -51,6 +56,7 @@ begin
         commit;
 	else
 		rollback;
+	end if;
 	end if;
 end;
 // DELIMITER //
