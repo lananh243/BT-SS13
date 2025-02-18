@@ -24,14 +24,22 @@ create procedure Stored_Procedure (
 
 begin
 	declare log_message varchar(200);
+	declare from_balance decimal;
 	start transaction;
     if (select count(account_id) from accounts a where a.account_id = from_account) = 0
     or (select count(account_id) from accounts a where a.account_id = to_account) = 0
     then
 		insert into accounts(log_message)
-        values('Lỗi hoặc số dư không đủ');
+        values('Lỗi Tài khoản ko hợp lệ');
         rollback;
 	else
+	select balance into from_balance from accounts a where a.account_id = from_account;
+    	if from_balance < amount then
+	insert into accounts(log_message)
+		values('Lỗi Số dư ko đủ');
+		rollback;
+   	else
+	
 	update accounts
     set balance = balance - amount
     where account_id = from_account;
@@ -41,8 +49,8 @@ begin
     where account_id = to_account;
     
     commit;
-    
-    end if;
+	end if;
+    	end if;
 end;
 // DELIMITER //
 
